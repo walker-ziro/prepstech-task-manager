@@ -64,7 +64,7 @@ A modern, full-stack task management application built with **React**, **Node.js
    NODE_ENV=development
    PORT=10000
    JWT_SECRET=your-super-secret-jwt-key-here
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/task-manager?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/task-manager?retryWrites=true&w=majority
    FRONTEND_URL=http://localhost:5173
    GOOGLE_GENAI_API_KEY=your-google-ai-api-key
    ```

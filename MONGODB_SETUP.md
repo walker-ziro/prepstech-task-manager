@@ -85,7 +85,7 @@ MongoDB Database
 ```env
 MONGODB_URI=mongodb://localhost:27017/task-manager
 # or for MongoDB Atlas:
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/task-manager
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/task-manager?retryWrites=true&w=majority
 ```
 
 ### 2. Initialize Database
