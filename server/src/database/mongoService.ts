@@ -73,10 +73,12 @@ export class MongoDBService {
       title: doc.title,
       description: doc.description,
       status: doc.status,
-      priority: doc.priority,
-      due_date: doc.dueDate ? doc.dueDate.toISOString() : null,
-      tags: doc.tags || [],
-      extras: doc.extras || {},
+      extras: {
+        priority: doc.extras.priority,
+        due_date: doc.extras.dueDate || null,
+        tags: doc.extras.tags || [],
+        ...doc.extras
+      },
       user_id: doc.userId.toString(),
       created_at: doc.createdAt,
       updated_at: doc.updatedAt
@@ -118,24 +120,30 @@ export class MongoDBService {
     title: string,
     description: string,
     status: TaskStatus,
-    priority: TaskPriority,
-    dueDate: string | null,
-    tags: string[],
-    extras: Record<string, any>,
+    extras: {
+      priority?: TaskPriority;
+      dueDate?: string;
+      tags?: string[];
+      [key: string]: any;
+    },
     userId: string
   ): Promise<TaskType> {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       throw new Error('Invalid user ID');
     }
 
+    const taskExtras = {
+      priority: extras.priority || TaskPriority.Medium,
+      dueDate: extras.dueDate || null,
+      tags: extras.tags || [],
+      ...extras
+    };
+
     const task = new Task({
       title,
       description,
       status,
-      priority,
-      dueDate: dueDate ? new Date(dueDate) : null,
-      tags: tags || [],
-      extras: extras || {},
+      extras: taskExtras,
       userId: new mongoose.Types.ObjectId(userId)
     });
 
@@ -178,9 +186,6 @@ export class MongoDBService {
     if (updates.title !== undefined) mongoUpdates.title = updates.title;
     if (updates.description !== undefined) mongoUpdates.description = updates.description;
     if (updates.status !== undefined) mongoUpdates.status = updates.status;
-    if (updates.priority !== undefined) mongoUpdates.priority = updates.priority;
-    if (updates.due_date !== undefined) mongoUpdates.dueDate = updates.due_date ? new Date(updates.due_date) : null;
-    if (updates.tags !== undefined) mongoUpdates.tags = updates.tags;
     if (updates.extras !== undefined) mongoUpdates.extras = updates.extras;
     mongoUpdates.updatedAt = new Date();
 

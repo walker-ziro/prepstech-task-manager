@@ -30,10 +30,12 @@ export interface ITask extends Document {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: TaskPriority;
-  dueDate?: Date;
-  tags: string[];
-  extras: Record<string, any>;
+  extras: {
+    priority: TaskPriority;
+    dueDate?: string;
+    tags: string[];
+    [key: string]: any;
+  };
   userId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -55,22 +57,13 @@ const TaskSchema: Schema = new Schema({
     enum: Object.values(TaskStatus),
     default: TaskStatus.Pending
   },
-  priority: {
-    type: String,
-    enum: Object.values(TaskPriority),
-    default: TaskPriority.Medium
-  },
-  dueDate: {
-    type: Date,
-    default: null
-  },
-  tags: [{
-    type: String,
-    trim: true
-  }],
   extras: {
     type: Schema.Types.Mixed,
-    default: {}
+    default: {
+      priority: TaskPriority.Medium,
+      dueDate: null,
+      tags: []
+    }
   },
   userId: {
     type: Schema.Types.ObjectId,
@@ -83,9 +76,9 @@ const TaskSchema: Schema = new Schema({
 
 // Create indexes for better performance
 TaskSchema.index({ userId: 1, status: 1 });
-TaskSchema.index({ userId: 1, priority: 1 });
-TaskSchema.index({ userId: 1, dueDate: 1 });
-TaskSchema.index({ userId: 1, tags: 1 });
+TaskSchema.index({ userId: 1, 'extras.priority': 1 });
+TaskSchema.index({ userId: 1, 'extras.dueDate': 1 });
+TaskSchema.index({ userId: 1, 'extras.tags': 1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);
 export const Task = mongoose.model<ITask>('Task', TaskSchema);

@@ -15,10 +15,12 @@ export interface Task {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: TaskPriority;
-  dueDate: string | null; // ISO date string
-  tags: string[];
-  extras: Record<string, any>; // For JSON data like tags, due date
+  extras: {
+    priority: TaskPriority;
+    dueDate: string | null; // ISO date string
+    tags: string[];
+    [key: string]: any; // Additional flexible fields
+  };
   userId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -35,16 +37,26 @@ export interface User {
 // Request/Response interfaces
 export interface CreateTaskRequest {
   title: string;
-  description: string;
-  status: TaskStatus;
-  extras?: Record<string, any>;
+  description?: string;
+  status?: TaskStatus;
+  extras?: {
+    priority?: TaskPriority;
+    dueDate?: string;
+    tags?: string[];
+    [key: string]: any;
+  };
 }
 
 export interface UpdateTaskRequest {
   title?: string;
   description?: string;
   status?: TaskStatus;
-  extras?: Record<string, any>;
+  extras?: {
+    priority?: TaskPriority;
+    dueDate?: string;
+    tags?: string[];
+    [key: string]: any;
+  };
 }
 
 export interface AuthRequest {

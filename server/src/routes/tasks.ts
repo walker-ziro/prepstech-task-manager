@@ -12,20 +12,26 @@ const createTaskSchema = Joi.object({
   title: Joi.string().required().max(255),
   description: Joi.string().allow('').max(1000),
   status: Joi.string().valid('pending', 'in-progress', 'done').default('pending'),
-  priority: Joi.string().valid('low', 'medium', 'high').default('medium'),
-  dueDate: Joi.string().allow('', null).default(null),
-  tags: Joi.array().items(Joi.string()).default([]),
-  extras: Joi.object().default({})
+  extras: Joi.object({
+    priority: Joi.string().valid('low', 'medium', 'high').default('medium'),
+    dueDate: Joi.string().allow('', null).default(null),
+    tags: Joi.array().items(Joi.string()).default([])
+  }).unknown(true).default({
+    priority: 'medium',
+    dueDate: null,
+    tags: []
+  })
 });
 
 const updateTaskSchema = Joi.object({
   title: Joi.string().max(255),
   description: Joi.string().allow('').max(1000),
   status: Joi.string().valid('pending', 'in-progress', 'done'),
-  priority: Joi.string().valid('low', 'medium', 'high'),
-  dueDate: Joi.string().allow('', null),
-  tags: Joi.array().items(Joi.string()),
-  extras: Joi.object()
+  extras: Joi.object({
+    priority: Joi.string().valid('low', 'medium', 'high'),
+    dueDate: Joi.string().allow('', null),
+    tags: Joi.array().items(Joi.string())
+  }).unknown(true)
 });
 
 // Get all tasks for authenticated user
@@ -47,16 +53,17 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next)
       return res.status(400).json({ error: { message: error.details[0].message } });
     }
 
-    const { title, description, status, priority, dueDate, tags, extras }: CreateTaskRequest = value;
+    const { title, description, status, extras }: CreateTaskRequest = value;
     const mongoService = getMongoService();
     const task = await mongoService.createTask(
       title, 
       description, 
       status as TaskStatus, 
-      priority as TaskPriority,
-      dueDate || null,
-      tags || [],
-      extras || {},
+      extras || {
+        priority: 'medium',
+        dueDate: null,
+        tags: []
+      },
       req.user!.id
     );
     res.status(201).json(task);
@@ -84,8 +91,23 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res, nex
       return res.status(404).json({ error: { message: 'Task not found' } });
     }
 
+    // Transform UpdateTaskRequest to match Task type
+    const taskUpdates: Partial<Task> = {
+      ...(updates.title && { title: updates.title }),
+      ...(updates.description !== undefined && { description: updates.description }),
+      ...(updates.status && { status: updates.status as TaskStatus }),
+      ...(updates.extras && { 
+        extras: {
+          priority: updates.extras.priority || existingTask.extras.priority,
+          due_date: updates.extras.dueDate !== undefined ? updates.extras.dueDate : existingTask.extras.due_date,
+          tags: updates.extras.tags || existingTask.extras.tags,
+          ...updates.extras
+        }
+      })
+    };
+
     // Update the task
-    const updatedTask = await mongoService.updateTask(taskId, req.user!.id, updates);
+    const updatedTask = await mongoService.updateTask(taskId, req.user!.id, taskUpdates);
     if (!updatedTask) {
       return res.status(400).json({ error: { message: 'No valid fields to update' } });
     }
@@ -132,9 +154,9 @@ router.post('/insights', authenticateToken, async (req: AuthenticatedRequest, re
 
     // Calculate task statistics
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter((task: Task) => task.status === 'done').length;
-    const inProgressTasks = tasks.filter((task: Task) => task.status === 'in-progress').length;
-    const pendingTasks = tasks.filter((task: Task) => task.status === 'pending').length;
+    const completedTasks = tasks.filter((task: Task) => task.status === TaskStatus.Done).length;
+    const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.InProgress).length;
+    const pendingTasks = tasks.filter((task: Task) => task.status === TaskStatus.Pending).length;
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     // Prepare task data for AI analysis
@@ -147,9 +169,9 @@ router.post('/insights', authenticateToken, async (req: AuthenticatedRequest, re
 
     // Group tasks by status for better analysis
     const tasksByStatus = {
-      pending: tasks.filter((task: Task) => task.status === 'pending'),
-      inProgress: tasks.filter((task: Task) => task.status === 'in-progress'),
-      completed: tasks.filter((task: Task) => task.status === 'done')
+      pending: tasks.filter((task: Task) => task.status === TaskStatus.Pending),
+      inProgress: tasks.filter((task: Task) => task.status === TaskStatus.InProgress),
+      completed: tasks.filter((task: Task) => task.status === TaskStatus.Done)
     };
 
     const prompt = `
