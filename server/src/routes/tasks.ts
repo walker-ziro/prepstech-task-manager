@@ -57,12 +57,12 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next)
     const mongoService = getMongoService();
     const task = await mongoService.createTask(
       title, 
-      description, 
+      description || '', 
       status as TaskStatus, 
       extras || {
-        priority: 'medium',
-        dueDate: null,
-        tags: []
+        priority: TaskPriority.Medium,
+        dueDate: undefined,
+        tags: [] as string[]
       },
       req.user!.id
     );

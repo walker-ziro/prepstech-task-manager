@@ -77,7 +77,12 @@ export class MongoDBService {
         priority: doc.extras.priority,
         due_date: doc.extras.dueDate || null,
         tags: doc.extras.tags || [],
-        ...doc.extras
+        // Include any additional custom fields from extras
+        ...Object.fromEntries(
+          Object.entries(doc.extras).filter(([key]) => 
+            !['priority', 'dueDate', 'tags'].includes(key)
+          )
+        )
       },
       user_id: doc.userId.toString(),
       created_at: doc.createdAt,

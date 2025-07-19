@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import { getMongoService } from '../database/init.js';
-import { AuthRequest, AuthResponse } from '../types.js';
+import { AuthRequest, AuthResponse, AuthenticatedRequest } from '../types.js';
 
 const router = express.Router();
 
