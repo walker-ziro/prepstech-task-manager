@@ -6,10 +6,12 @@ interface TaskFormData {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: TaskPriority;
-  dueDate: string | null;
-  tags: string[];
-  extras: Record<string, any>;
+  extras: {
+    priority: TaskPriority;
+    dueDate: string | null;
+    tags: string[];
+    [key: string]: any;
+  };
 }
 
 interface TaskModalProps {
@@ -38,9 +40,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
             setTitle(taskToEdit.title);
             setDescription(taskToEdit.description);
             setStatus(taskToEdit.status);
-            setPriority(taskToEdit.priority || TaskPriority.Medium);
-            setDueDate(taskToEdit.dueDate ? taskToEdit.dueDate.split('T')[0] : '');
-            setTags(taskToEdit.tags || []);
+            setPriority(taskToEdit.extras?.priority || TaskPriority.Medium);
+            setDueDate(taskToEdit.extras?.dueDate ? taskToEdit.extras.dueDate.split('T')[0] : '');
+            setTags(taskToEdit.extras?.tags || []);
             setTagInput('');
         } else {
             setTitle('');
@@ -87,11 +89,12 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
       await onSave({ 
         title: trimmedTitle, 
         description, 
-        status, 
-        priority,
-        dueDate: dueDate || null,
-        tags,
-        extras: {} 
+        status,
+        extras: {
+          priority,
+          dueDate: dueDate || null,
+          tags
+        }
       });
     } catch (err: any) {
       setError(err.message || 'Failed to save task.');

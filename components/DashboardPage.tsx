@@ -62,24 +62,31 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) => {
     title: string; 
     description: string; 
     status: TaskStatus; 
-    priority: TaskPriority;
-    dueDate: string | null;
-    tags: string[];
-    extras: Record<string, any> 
+    extras: {
+      priority: TaskPriority;
+      dueDate: string | null;
+      tags: string[];
+      [key: string]: any;
+    };
   }) => {
     try {
       if (taskToEdit) {
-        const updatedTask = await apiService.updateTask(taskToEdit.id, taskData);
+        const updatedTask = await apiService.updateTask(taskToEdit.id, {
+          title: taskData.title,
+          description: taskData.description,
+          status: taskData.status,
+          extras: taskData.extras
+        });
         setTasks(tasks.map(t => t.id === taskToEdit.id ? updatedTask : t));
       } else {
         const newTask = await apiService.createTask(
           taskData.title, 
           taskData.description, 
           taskData.status, 
-          taskData.priority,
-          taskData.dueDate,
-          taskData.tags,
-          taskData.extras
+          {
+            ...taskData.extras,
+            dueDate: taskData.extras.dueDate || undefined
+          }
         );
         setTasks([...tasks, newTask]);
       }
@@ -99,13 +106,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) => {
     
     // Priority filter
     if (priorityFilter !== 'all') {
-      filtered = filtered.filter(task => task.priority === priorityFilter);
+      filtered = filtered.filter(task => task.extras?.priority === priorityFilter);
     }
     
     // Tag filter
     if (tagFilter) {
       filtered = filtered.filter(task => 
-        task.tags && task.tags.some(tag => 
+        task.extras?.tags && task.extras.tags.some((tag: string) => 
           tag.toLowerCase().includes(tagFilter.toLowerCase())
         )
       );
@@ -115,7 +122,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout }) => {
     if (showOverdue) {
       const now = new Date();
       filtered = filtered.filter(task => 
-        task.dueDate && new Date(task.dueDate) < now && task.status !== 'done'
+        task.extras?.dueDate && new Date(task.extras.dueDate) < now && task.status !== 'done'
       );
     }
     

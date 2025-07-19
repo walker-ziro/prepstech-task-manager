@@ -30,21 +30,21 @@ const InsightsModal: React.FC<InsightsModalProps> = ({ isOpen, onClose, tasks })
       const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
       // Priority breakdown
-      const highPriorityTasks = tasks.filter(task => task.priority === 'high').length;
-      const mediumPriorityTasks = tasks.filter(task => task.priority === 'medium').length;
-      const lowPriorityTasks = tasks.filter(task => task.priority === 'low').length;
+      const highPriorityTasks = tasks.filter(task => task.extras?.priority === 'high').length;
+      const mediumPriorityTasks = tasks.filter(task => task.extras?.priority === 'medium').length;
+      const lowPriorityTasks = tasks.filter(task => task.extras?.priority === 'low').length;
 
       // Upcoming deadlines (next 7 days)
       const now = new Date();
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       const upcomingDeadlines = tasks
-        .filter(task => task.dueDate && new Date(task.dueDate) >= now && new Date(task.dueDate) <= nextWeek)
-        .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+        .filter(task => task.extras?.dueDate && new Date(task.extras.dueDate) >= now && new Date(task.extras.dueDate) <= nextWeek)
+        .sort((a, b) => new Date(a.extras?.dueDate!).getTime() - new Date(b.extras?.dueDate!).getTime())
         .slice(0, 5);
 
       // Overdue tasks
       const overdueTasks = tasks
-        .filter(task => task.dueDate && new Date(task.dueDate) < now && task.status !== 'done')
+        .filter(task => task.extras?.dueDate && new Date(task.extras.dueDate) < now && task.status !== 'done')
         .length;
 
       const immediateInsights = {

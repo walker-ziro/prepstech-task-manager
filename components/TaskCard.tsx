@@ -22,10 +22,10 @@ const priorityStyles: { [key in TaskPriority]: { bg: string, text: string, dot: 
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
   const statusStyle = statusStyles[task.status];
-  const priorityStyle = priorityStyles[task.priority || TaskPriority.Medium];
+  const priorityStyle = priorityStyles[task.extras?.priority || TaskPriority.Medium];
   
   const formattedStatus = task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const formattedPriority = task.priority?.charAt(0).toUpperCase() + task.priority?.slice(1) || 'Medium';
+  const formattedPriority = task.extras?.priority?.charAt(0).toUpperCase() + task.extras?.priority?.slice(1) || 'Medium';
   
   const formatDueDate = (dueDate: string | null) => {
     if (!dueDate) return null;
@@ -39,7 +39,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
     };
   };
   
-  const dueDateInfo = formatDueDate(task.dueDate);
+  const dueDateInfo = formatDueDate(task.extras?.dueDate);
 
   return (
     <div className="bg-slate-800 rounded-lg shadow-lg p-4 sm:p-5 flex flex-col h-full hover:shadow-sky-500/10 transition-shadow duration-300 border border-slate-700">
@@ -76,9 +76,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
         )}
         
         {/* Tags */}
-        {task.tags && task.tags.length > 0 && (
+        {task.extras?.tags && task.extras.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {task.tags.map((tag, index) => (
+            {task.extras.tags.map((tag: string, index: number) => (
               <span key={index} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-sky-600/20 text-sky-300 border border-sky-600/30">
                 {tag}
               </span>

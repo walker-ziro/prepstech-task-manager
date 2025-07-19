@@ -126,14 +126,16 @@ export const createTask = async (
   title: string,
   description: string,
   status: string,
-  priority: string,
-  dueDate: string | null,
-  tags: string[],
-  extras: Record<string, any> = {}
+  extras: {
+    priority?: string;
+    dueDate?: string;
+    tags?: string[];
+    [key: string]: any;
+  } = {}
 ): Promise<Task> => {
   return await apiFetch('/tasks', {
     method: 'POST',
-    body: JSON.stringify({ title, description, status, priority, dueDate, tags, extras }),
+    body: JSON.stringify({ title, description, status, extras }),
   });
 };
 
