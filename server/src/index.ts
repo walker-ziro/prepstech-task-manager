@@ -21,11 +21,11 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        process.env.FRONTEND_URL || 'https://prepstech-task-manager.vercel.app',
+        process.env.FRONTEND_URL || 'https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app',
+        'https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app',
         'https://prepstech-task-manager.vercel.app',
         'https://prepstech-task-manager.netlify.app',
-        'https://*.vercel.app',
-        'https://*.netlify.app'
+        'https://*.vercel.app'
       ]
     : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'],
   credentials: true
