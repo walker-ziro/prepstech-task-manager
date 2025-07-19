@@ -42,7 +42,7 @@ A modern, full-stack task management application built with **React**, **Node.js
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/walker-ziro/prepstech-task-manager.git
    cd prepstech-task-manager
    ```
 
@@ -56,16 +56,16 @@ A modern, full-stack task management application built with **React**, **Node.js
    
    **Frontend (.env):**
    ```env
-   VITE_API_URL=http://localhost:10000
+   VITE_API_URL=https://prepstech-task-manager.onrender.com
    ```
    
    **Backend (server/.env):**
    ```env
-   NODE_ENV=development
+   NODE_ENV=production
    PORT=10000
    JWT_SECRET=your-super-secret-jwt-key-here
    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/task-manager?retryWrites=true&w=majority
-   FRONTEND_URL=http://localhost:5173
+   FRONTEND_URL=https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app
    GOOGLE_GENAI_API_KEY=your-google-ai-api-key
    ```
 
@@ -87,18 +87,29 @@ A modern, full-stack task management application built with **React**, **Node.js
 
 ## 🌐 Deployment
 
-### Frontend (Vercel/Netlify)
-1. Build the frontend: `npm run build`
-2. Deploy the `dist/` folder
-3. Set environment variable: `VITE_API_URL=your-backend-url`
+### 🚀 Live Application
+- **Frontend**: [https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app](https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app)
+- **Backend API**: [https://prepstech-task-manager.onrender.com](https://prepstech-task-manager.onrender.com)
+- **Database**: MongoDB Atlas (Cloud)
 
-### Backend (Railway/Render/Heroku)
-1. Set environment variables in your hosting platform
+### Frontend (Vercel)
+1. Build the frontend: `npm run build`
+2. Deploy the `dist/` folder to Vercel
+3. Set environment variable: `VITE_API_URL=https://prepstech-task-manager.onrender.com`
+
+### Backend (Render)
+1. Set environment variables in Render dashboard:
+   - `NODE_ENV=production`
+   - `JWT_SECRET=your-secure-jwt-secret`
+   - `MONGODB_URI=your-mongodb-atlas-connection-string`
+   - `FRONTEND_URL=https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app`
+   - `GOOGLE_GENAI_API_KEY=your-google-ai-api-key`
 2. Use `npm run build && npm start` as start command
-3. Set PORT environment variable (usually automatic)
+3. PORT is automatically set by Render
 
 ### Database
 - MongoDB Atlas is already cloud-ready
+- Connection string configured in backend environment variables
 - No additional setup needed for database deployment
 
 ## 📝 API Endpoints
