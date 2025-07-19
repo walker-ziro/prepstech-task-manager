@@ -68,18 +68,21 @@ export class MongoDBService {
   }
 
   private mapTaskDocToType(doc: ITask): TaskType {
+    // Handle both old format (separate fields) and new format (extras object)
+    const extras = doc.extras || {};
+    
     return {
       id: (doc._id as any).toString(),
       title: doc.title,
       description: doc.description,
       status: doc.status,
       extras: {
-        priority: doc.extras.priority,
-        due_date: doc.extras.dueDate || null,
-        tags: doc.extras.tags || [],
+        priority: extras.priority || (doc as any).priority || TaskPriority.Medium,
+        due_date: extras.dueDate || (doc as any).due_date || null,
+        tags: extras.tags || (doc as any).tags || [],
         // Include any additional custom fields from extras
         ...Object.fromEntries(
-          Object.entries(doc.extras).filter(([key]) => 
+          Object.entries(extras).filter(([key]) => 
             !['priority', 'dueDate', 'tags'].includes(key)
           )
         )
