@@ -1,7 +1,7 @@
 import type { Task, User } from '../types';
 
 // API client for the backend server
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:10000'; // Default to localhost backend
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://prepstech-task-manager.onrender.com'; // Default to production backend
 const SESSION_KEY = 'task_manager_session';
 
 /**
