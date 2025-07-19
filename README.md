@@ -1,44 +1,22 @@
 # 🚀 Prepstech Task Manager
 
-A modern, full-stack task management application built with **React**, **Node.js**, **Express**, and **MongoDB Atlas**.
+A modern, full-stack task management application with AI-powered insights and flexible JSON-based task metadata storage.
 
-## ✨ Features
+## � Deployed Application
 
-- 🔐 **Secure Authentication** - JWT-based user registration and login
-- 📝 **Task Management** - Create, edit, delete, and organize tasks
-- 🏷️ **Advanced Filtering** - Filter by status, priority, tags, and due dates
-- 🤖 **AI Insights** - Get productivity recommendations powered by Google Gemini
-- 🎨 **Modern UI** - Clean, responsive design with Tailwind CSS
-- ☁️ **Cloud Database** - MongoDB Atlas integration for reliable data storage
+**Live Demo**: [https://prepstech-task-manager.vercel.app](https://prepstech-task-manager.vercel.app)
+- **Frontend**: Deployed on Vercel
+- **Backend API**: [https://prepstech-task-manager.onrender.com](https://prepstech-task-manager.onrender.com)
+- **Database**: MongoDB Atlas (Cloud)
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 19** with TypeScript
-- **Vite** for fast development and building
-- **Tailwind CSS** for styling
-- **React Markdown** for rich text rendering
-
-### Backend
-- **Node.js** with **Express**
-- **TypeScript** for type safety
-- **MongoDB** with **Mongoose** ODM
-- **JWT** authentication
-- **Google Generative AI** for insights
-
-### Database
-- **MongoDB Atlas** (Cloud Database)
-- Optimized indexes for performance
-- Secure user data management
-
-## 🚀 Quick Start
+## �️ Setup Instructions
 
 ### Prerequisites
 - Node.js 18+
 - MongoDB Atlas account
 - Google Gemini API key (optional, for AI insights)
 
-### Installation
+### Local Development Setup
 
 1. **Clone the repository**
    ```bash
@@ -56,140 +34,139 @@ A modern, full-stack task management application built with **React**, **Node.js
    
    **Frontend (.env):**
    ```env
-   VITE_API_URL=https://prepstech-task-manager.onrender.com
+   # For local development
+   VITE_API_URL=http://localhost:10000
+   
+   # For production
+   # VITE_API_URL=https://prepstech-task-manager.onrender.com
    ```
    
    **Backend (server/.env):**
    ```env
-   NODE_ENV=production
+   NODE_ENV=development
    PORT=10000
    JWT_SECRET=your-super-secret-jwt-key-here
    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/task-manager?retryWrites=true&w=majority
-   FRONTEND_URL=https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app
+   FRONTEND_URL=http://localhost:5173
    GOOGLE_GENAI_API_KEY=your-google-ai-api-key
    ```
 
-4. **Initialize MongoDB**
+4. **Start the application**
    ```bash
+   # Start backend server
    cd server
-   npm run setup:mongodb
-   ```
-
-5. **Start the application**
-   ```bash
-   # Start both frontend and backend
-   npm run dev:full
+   npm run dev
    
-   # Or start separately:
-   npm run server:dev  # Backend on :10000
-   npm run dev         # Frontend on :5173
+   # In a new terminal, start frontend
+   cd ..
+   npm run dev
    ```
+   
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:10000
 
-## 🌐 Deployment
+### Production Deployment
 
-### 🚀 Live Application
-- **Frontend**: [https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app](https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app)
-- **Backend API**: [https://prepstech-task-manager.onrender.com](https://prepstech-task-manager.onrender.com)
-- **Database**: MongoDB Atlas (Cloud)
+**Frontend (Vercel):**
+1. Update `.env`: `VITE_API_URL=https://prepstech-task-manager.onrender.com`
+2. Build: `npm run build`
+3. Deploy `dist/` folder or connect GitHub repo to Vercel
 
-### Frontend (Vercel)
-1. Build the frontend: `npm run build`
-2. Deploy the `dist/` folder to Vercel
-3. Set environment variable: `VITE_API_URL=https://prepstech-task-manager.onrender.com`
+**Backend (Render):**
+1. Update `server/.env`: `NODE_ENV=production`
+2. Set environment variables in Render dashboard
+3. Deploy using GitHub integration
 
-### Backend (Render)
-1. Set environment variables in Render dashboard:
-   - `NODE_ENV=production`
-   - `JWT_SECRET=your-secure-jwt-secret`
-   - `MONGODB_URI=your-mongodb-atlas-connection-string`
-   - `FRONTEND_URL=https://prepstech-task-manager-hxmfnthd5-walkertechs-projects.vercel.app`
-   - `GOOGLE_GENAI_API_KEY=your-google-ai-api-key`
-2. Use `npm run build && npm start` as start command
-3. PORT is automatically set by Render
+## 📊 Database Schema Description
 
-### Database
-- MongoDB Atlas is already cloud-ready
-- Connection string configured in backend environment variables
-- No additional setup needed for database deployment
-
-## 📝 API Endpoints
-
-### Authentication
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/login` - User login
-
-### Tasks
-- `GET /api/tasks` - Get user's tasks
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
-- `POST /api/tasks/insights` - Get AI insights
-
-### System
-- `GET /api/health` - Basic health check
-- `GET /api/system/health` - Database health check
-
-## 🔒 Security Features
-
-- **Password Hashing** with bcrypt
-- **JWT Authentication** with 7-day expiration
-- **Rate Limiting** on API endpoints
-- **CORS** protection
-- **Helmet.js** security headers
-- **Input Validation** with Joi schemas
-
-## 🧪 Development Commands
-
-```bash
-# Frontend
-npm run dev              # Start development server
-npm run build            # Build for production
-npm run preview          # Preview production build
-
-# Backend
-npm run server:dev       # Start with hot reload
-npm run server:build     # Build TypeScript
-npm run server:start     # Start production server
-npm run setup:mongodb    # Initialize database
-
-# Full Stack
-npm run dev:full         # Start both frontend and backend
-npm run install:all      # Install all dependencies
+### Task Schema (MongoDB)
+```javascript
+{
+  _id: ObjectId,
+  title: String,           // Task title
+  description: String,     // Task description
+  status: String,          // "pending" | "in_progress" | "completed"
+  userId: ObjectId,        // Reference to user who created the task
+  createdAt: Date,         // Auto-generated creation timestamp
+  updatedAt: Date,         // Auto-generated update timestamp
+  extras: {                // JSON object for flexible metadata
+    priority: String,      // "low" | "medium" | "high" | "urgent"
+    dueDate: String|null,  // ISO date string or null
+    tags: [String],        // Array of tag strings
+    // ... any additional custom fields
+  }
+}
 ```
 
-## 📁 Project Structure
-
-```
-prepstech-task-manager/
-├── components/          # React components
-├── services/           # API services
-├── server/            # Backend application
-│   ├── src/
-│   │   ├── database/  # MongoDB models and services
-│   │   ├── routes/    # API route handlers
-│   │   ├── middleware/# Authentication & error handling
-│   │   └── types.ts   # TypeScript definitions
-│   └── package.json
-├── types.ts           # Shared TypeScript types
-└── package.json
+### User Schema (MongoDB)
+```javascript
+{
+  _id: ObjectId,
+  email: String,           // Unique user email
+  password: String,        // Bcrypt hashed password
+  createdAt: Date,         // Auto-generated creation timestamp
+  updatedAt: Date          // Auto-generated update timestamp
+}
 ```
 
-## 🤝 Contributing
+### Key Features:
+- **Flexible Metadata**: The `extras` field stores priority, due dates, tags, and any future custom fields as JSON
+- **Type Safety**: TypeScript interfaces ensure consistent data structure across frontend/backend
+- **Backward Compatibility**: Database mapping handles both legacy and new task formats
+- **Indexed Fields**: MongoDB indexes on `userId`, `status`, and `extras.priority` for fast queries
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## � What I'd Build Next
 
-## 📄 License
+If I had more time, here are the key features I would implement:
 
-This project is licensed under the MIT License.
+### 🔄 Real-time Collaboration
+- **WebSocket Integration**: Live task updates when multiple users collaborate
+- **Shared Workspaces**: Team-based task management with role permissions
+- **Activity Feed**: Real-time notifications for task changes and comments
 
-## 🙋‍♂️ Support
+### � Advanced Analytics & Insights
+- **Productivity Dashboard**: Time tracking, completion rates, and performance metrics
+- **Advanced AI Features**: Smart due date suggestions, workload optimization recommendations
+- **Data Visualization**: Charts for task completion trends, time allocation, and productivity patterns
 
-If you have any questions or need help, please open an issue on GitHub.
+### 🎨 Enhanced User Experience
+- **Drag & Drop Interface**: Kanban-style board for visual task management
+- **Bulk Operations**: Select and modify multiple tasks simultaneously
+- **Advanced Search**: Full-text search with filters, saved searches, and quick actions
+- **Custom Task Templates**: Reusable task structures for common workflows
+
+### 🔧 Technical Improvements
+- **Offline Support**: PWA with service workers for offline task management
+- **Data Export**: Export tasks to CSV, PDF, or integrate with external tools
+- **API Rate Limiting**: More sophisticated rate limiting with user-based quotas
+- **Comprehensive Testing**: Unit tests, integration tests, and E2E testing with Cypress
+
+### 🔐 Enterprise Features
+- **SSO Integration**: Support for Google, Microsoft, and SAML authentication
+- **Advanced Permissions**: Fine-grained access control and audit logs
+- **API Documentation**: Swagger/OpenAPI documentation for third-party integrations
+- **Webhook Support**: External service integrations and automation triggers
+
+The current architecture with JSON-based extras field makes these extensions particularly feasible, as new metadata can be added without schema migrations.
+
+## ✨ Features
+
+- 🔐 **Secure Authentication** - JWT-based user registration and login
+- 📝 **Task Management** - Create, edit, delete, and organize tasks with flexible JSON metadata
+- 🏷️ **Advanced Filtering** - Filter by status, priority, tags, and due dates
+- 🤖 **AI Insights** - Get productivity recommendations powered by Google Gemini
+- 🎨 **Modern UI** - Clean, responsive design with Tailwind CSS
+- ☁️ **Cloud Database** - MongoDB Atlas integration with flexible schema design
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
+- **Backend**: Node.js, Express, TypeScript, MongoDB, Mongoose
+- **Authentication**: JWT with bcrypt password hashing
+- **AI Integration**: Google Generative AI for insights
+- **Database**: MongoDB Atlas with JSON-based metadata storage
+- **Deployment**: Vercel (Frontend) + Render (Backend)
 
 ---
 
-Built with ❤️ using modern web technologies
+**Built with ❤️ using modern web technologies**
