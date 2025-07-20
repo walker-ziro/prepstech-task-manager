@@ -15,10 +15,7 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const session = localStorage.getItem(SESSION_KEY);
   const token = session ? JSON.parse(session).token : null;
 
-  // Use the Headers object for type safety and proper handling of HeadersInit.
   const headers = new Headers(options.headers);
-
-  // Set a default Content-Type if one isn't already present.
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
@@ -33,21 +30,39 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
       headers,
     });
 
+    // If the response is not OK, we expect a JSON error body from the backend.
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: { message: `Request failed with status: ${response.status}` } }));
-      throw new Error(errorData.error?.message || 'An unknown API error occurred.');
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (jsonError) {
+        // If the body isn't valid JSON, create a standard error object.
+        throw new Error(`Request failed with status: ${response.status}. Could not parse error response.`);
+      }
+      // Throw an error with the message from the backend, or a fallback.
+      throw new Error(errorData?.error?.message || `An API error occurred with status: ${response.status}`);
     }
 
-    if (response.status === 204) { // No Content
+    // Handle 'No Content' responses.
+    if (response.status === 204) {
       return null;
     }
 
+    // If the response is OK, return the JSON body.
     return response.json();
+
   } catch (error) {
-    if (error instanceof TypeError) {
-      throw new Error('Network error: Unable to connect to server. Please check if the server is running.');
+    // Re-throw the specific error we created above, or handle network errors.
+    if (error instanceof Error) {
+        // If it's a TypeError, it's likely a network failure.
+        if (error.name === 'TypeError') {
+            throw new Error('Network error: Unable to connect to the server.');
+        }
+        // Otherwise, it's an API error we've already processed.
+        throw error;
     }
-    throw error;
+    // Catch any other unexpected errors.
+    throw new Error('An unexpected error occurred.');
   }
 };
 
