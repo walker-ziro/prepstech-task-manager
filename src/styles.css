@@ -16,3 +16,67 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #64748b; /* slate-500 */
 }
+
+
+
+
+/* Adds a colored left border for priority without changing other borders */
+.task-card {
+  border-left-width: 5px;
+}
+
+.priority-high { border-left-color: #e53e3e; }
+.priority-medium { border-left-color: #dd6b20; }
+.priority-low { border-left-color: #38a169; }
+.priority-none { border-left-color: #ccc; }
+
+/* Styles for the header to align title and status */
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem; /* Adds space below the header */
+}
+
+/* Overrides the default h3 margin to work within the flex header */
+.task-card h3 {
+  margin: 0; 
+}
+
+/* A simple badge for the task status */
+.status-badge {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Container for Priority and Due Date */
+.task-details {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 1rem 0; /* Adds vertical spacing */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Space between priority and due date */
+}
+
+/* Styles for individual tags */
+.task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem; /* Space above action buttons */
+}
+
+.tag {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px; /* Pill shape */
+  font-size: 0.75rem;
+  font-weight: 500;
+}
