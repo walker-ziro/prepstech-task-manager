@@ -109,11 +109,13 @@ router.post('/login', async (req, res, next) => {
     // Find user
     const mongoService = getMongoService();
     const user = await mongoService.getUserByEmail(email);
+    
+    // Check if the user email exists in the database
     if (!user) {
-      return res.status(401).json({ error: { message: 'Invalid credentials' } });
+      return res.status(404).json({ error: { message: 'This email is not registered. Please sign up first.' } });
     }
 
-    // Check password
+    // If user exists, check password
     const isValidPassword = await bcrypt.compare(password, user.password || '');
     if (!isValidPassword) {
       return res.status(401).json({ error: { message: 'Invalid credentials' } });
