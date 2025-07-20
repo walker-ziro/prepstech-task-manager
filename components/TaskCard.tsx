@@ -13,12 +13,9 @@ const formatDate = (dateString?: string): string => {
     return 'No due date';
   }
   try {
-    // Creating a date object from the string
     const date = new Date(dateString);
-    // Adjust for timezone offset to prevent date changes
     const userTimezoneOffset = date.getTimezoneOffset() * 60000;
     const correctedDate = new Date(date.getTime() + userTimezoneOffset);
-    
     return correctedDate.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -32,12 +29,10 @@ const formatDate = (dateString?: string): string => {
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
   const { title, description, status, extras } = task;
-  // Safely access nested 'extras' properties
   const priority = extras?.priority;
   const dueDate = extras?.dueDate;
   const tags = extras?.tags;
 
-  // Function to get a CSS class based on priority level
   const getPriorityClass = (level?: string) => {
     const priorityLevel = level?.toLowerCase();
     if (priorityLevel === 'high') return 'priority-high';
@@ -49,35 +44,39 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
   const priorityClass = getPriorityClass(priority);
 
   return (
+    // The priorityClass is added here for the border color
     <div className={`task-card ${priorityClass}`}>
-      <div className="task-card-header">
-        <h3>{title}</h3>
-        {priority && (
-          <span className={`priority-badge ${priorityClass}`}>
-            {priority}
-          </span>
+      <div> {/* This wrapper keeps content together */}
+        <div className="task-card-header">
+          <h3>{title}</h3>
+          {status && <span className="status-badge">{status}</span>}
+        </div>
+        <p>{description}</p>
+        
+        {/* New details are grouped here */}
+        <div className="task-details">
+          {priority && (
+            <div className={`priority-indicator ${priorityClass}`}>
+              <strong>Priority:</strong> {priority}
+            </div>
+          )}
+          {dueDate && (
+            <div>
+              <strong>Due:</strong> {formatDate(dueDate)}
+            </div>
+          )}
+        </div>
+
+        {tags && tags.length > 0 && (
+          <div className="task-tags">
+            {tags.map((tag, index) => (
+              <span key={index} className="tag">
+                {tag}
+              </span>
+            ))}
+          </div>
         )}
       </div>
-      <p className="task-description">{description}</p>
-      
-      <div className="task-meta">
-        <div className="task-meta-item">
-          <strong>Status:</strong> {status}
-        </div>
-        <div className="task-meta-item">
-          <strong>Due:</strong> {formatDate(dueDate)}
-        </div>
-      </div>
-      
-      {tags && tags.length > 0 && (
-        <div className="task-tags">
-          {tags.map((tag, index) => (
-            <span key={index} className="tag">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
       
       <div className="task-actions">
         <button className="edit-btn" onClick={() => onEdit(task)}>
