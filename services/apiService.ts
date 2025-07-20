@@ -34,8 +34,8 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: `Request failed with status: ${response.status}` }));
-      throw new Error(errorData.message || 'An unknown API error occurred.');
+      const errorData = await response.json().catch(() => ({ error: { message: `Request failed with status: ${response.status}` } }));
+      throw new Error(errorData.error?.message || 'An unknown API error occurred.');
     }
 
     if (response.status === 204) { // No Content
