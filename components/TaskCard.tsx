@@ -53,7 +53,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
       <div className="flex-grow">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
           <h3 className="text-base sm:text-lg font-bold text-white break-words">{task.title}</h3>
-          <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} whitespace-nowrap`}>
+          <span className={`self-start inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} whitespace-nowrap`}>
             <svg className={`-ml-0.5 mr-1 sm:mr-1.5 h-2 w-2 ${statusStyle.dot}`} fill="currentColor" viewBox="0 0 8 8">
               <circle cx="4" cy="4" r="3" />
             </svg>
@@ -66,7 +66,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
 
       {/* --- Footer section with border top --- */}
       <div className="flex justify-between items-center pt-4 border-t border-slate-700/50">
-        {/* --- NEW: Left side for details --- */}
+        {/* --- Left side for details --- */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-2 text-xs text-slate-400">
           {priority && priorityStyle && (
             <div className="flex items-center">
