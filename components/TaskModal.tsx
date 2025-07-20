@@ -25,12 +25,19 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>(TaskStatus.Pending);
-  const [priority, setPriority] = useState<TaskPriority>(TaskPriority.Medium);
-  const [dueDate, setDueDate] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
+  const [extrasJson, setExtrasJson] = useState('');
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Default extras template with placeholders
+  const defaultExtras = {
+    priority: TaskPriority.Medium,
+    dueDate: null,
+    tags: ["work"],
+    category: "general",
+    estimatedHours: 2,
+    assignee: "unassigned"
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -40,39 +47,17 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
             setTitle(taskToEdit.title);
             setDescription(taskToEdit.description);
             setStatus(taskToEdit.status);
-            setPriority(taskToEdit.extras?.priority || TaskPriority.Medium);
-            setDueDate(taskToEdit.extras?.dueDate ? taskToEdit.extras.dueDate.split('T')[0] : '');
-            setTags(taskToEdit.extras?.tags || []);
-            setTagInput('');
+            // Pretty print the existing extras JSON
+            setExtrasJson(JSON.stringify(taskToEdit.extras || defaultExtras, null, 2));
         } else {
             setTitle('');
             setDescription('');
             setStatus(TaskStatus.Pending);
-            setPriority(TaskPriority.Medium);
-            setDueDate('');
-            setTags([]);
-            setTagInput('');
+            // Pretty print the default extras template
+            setExtrasJson(JSON.stringify(defaultExtras, null, 2));
         }
     }
   }, [isOpen, taskToEdit]);
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +68,29 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
         setError('Title is required and cannot be empty.');
         return;
     }
+
+    // Validate and parse JSON
+    let parsedExtras;
+    try {
+      parsedExtras = JSON.parse(extrasJson);
+      
+      // Validate that required fields are present and correctly typed
+      if (typeof parsedExtras !== 'object' || parsedExtras === null) {
+        throw new Error('Extras must be a valid JSON object');
+      }
+      
+      // Ensure required fields have proper defaults
+      if (!parsedExtras.priority) {
+        parsedExtras.priority = TaskPriority.Medium;
+      }
+      if (!Array.isArray(parsedExtras.tags)) {
+        parsedExtras.tags = [];
+      }
+      
+    } catch (jsonError: any) {
+      setError(`Invalid JSON format in extras: ${jsonError.message}`);
+      return;
+    }
     
     setIsSaving(true);
     try {
@@ -90,16 +98,35 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
         title: trimmedTitle, 
         description, 
         status,
-        extras: {
-          priority,
-          dueDate: dueDate || null,
-          tags
-        }
+        extras: parsedExtras
       });
     } catch (err: any) {
       setError(err.message || 'Failed to save task.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Helper function to format JSON
+  const formatJson = () => {
+    try {
+      const parsed = JSON.parse(extrasJson);
+      setExtrasJson(JSON.stringify(parsed, null, 2));
+    } catch (e) {
+      // If JSON is invalid, don't format
+    }
+  };
+
+  // Helper function to add common fields
+  const addCommonField = (fieldName: string, defaultValue: any) => {
+    try {
+      const parsed = JSON.parse(extrasJson);
+      if (!parsed.hasOwnProperty(fieldName)) {
+        parsed[fieldName] = defaultValue;
+        setExtrasJson(JSON.stringify(parsed, null, 2));
+      }
+    } catch (e) {
+      setError('Please fix JSON format before adding fields');
     }
   };
   
@@ -125,77 +152,73 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, taskToEd
                         <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm sm:text-base resize-none" disabled={isSaving}></textarea>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="status" className="text-sm font-medium text-slate-300 block mb-1">Status</label>
-                            <select id="status" value={status} onChange={e => setStatus(e.target.value as TaskStatus)} className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" disabled={isSaving}>
-                                {Object.values(TaskStatus).map(s => <option key={s} value={s}>{s.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="priority" className="text-sm font-medium text-slate-300 block mb-1">Priority</label>
-                            <select id="priority" value={priority} onChange={e => setPriority(e.target.value as TaskPriority)} className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" disabled={isSaving}>
-                                <option value={TaskPriority.Low}>Low</option>
-                                <option value={TaskPriority.Medium}>Medium</option>
-                                <option value={TaskPriority.High}>High</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <div>
-                        <label htmlFor="dueDate" className="text-sm font-medium text-slate-300 block mb-1">Due Date</label>
-                        <input 
-                            id="dueDate" 
-                            type="date" 
-                            value={dueDate} 
-                            onChange={e => setDueDate(e.target.value)} 
-                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" 
-                            disabled={isSaving}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="tags" className="text-sm font-medium text-slate-300 block mb-1">Tags</label>
-                        <div className="space-y-2">
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <input 
-                                    id="tags"
-                                    type="text" 
-                                    value={tagInput}
-                                    onChange={e => setTagInput(e.target.value)}
-                                    onKeyPress={handleTagInputKeyPress}
-                                    placeholder="work, personal, urgent"
-                                    className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" 
-                                    disabled={isSaving}
-                                />
+                        <div className="flex items-center justify-between mb-2">
+                            <label htmlFor="extras" className="text-sm font-medium text-slate-300">Task Extras (JSON)</label>
+                            <div className="flex gap-2">
                                 <button 
                                     type="button" 
-                                    onClick={handleAddTag}
-                                    disabled={isSaving || !tagInput.trim()}
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-sky-600 rounded-md hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:bg-sky-800"
+                                    onClick={formatJson}
+                                    className="text-xs px-2 py-1 bg-slate-600 hover:bg-slate-500 text-slate-300 rounded transition-colors"
+                                    disabled={isSaving}
                                 >
-                                    Add Tag
+                                    Format JSON
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => addCommonField('category', 'development')}
+                                    className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors"
+                                    disabled={isSaving}
+                                >
+                                    + Category
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => addCommonField('estimatedHours', 4)}
+                                    className="text-xs px-2 py-1 bg-green-600 hover:bg-green-500 text-white rounded transition-colors"
+                                    disabled={isSaving}
+                                >
+                                    + Hours
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => addCommonField('assignee', 'team-member')}
+                                    className="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded transition-colors"
+                                    disabled={isSaving}
+                                >
+                                    + Assignee
                                 </button>
                             </div>
-                            {tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                    {tags.map((tag, index) => (
-                                        <span key={index} className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-sky-600/20 text-sky-300 text-xs sm:text-sm rounded-full border border-sky-600/30">
-                                            {tag}
-                                            <button 
-                                                type="button" 
-                                                onClick={() => handleRemoveTag(tag)}
-                                                className="text-sky-400 hover:text-sky-200 ml-1 text-sm"
-                                                disabled={isSaving}
-                                            >
-                                                ×
-                                            </button>
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
+                        </div>
+                        <textarea 
+                            id="extras"
+                            value={extrasJson} 
+                            onChange={e => setExtrasJson(e.target.value)}
+                            rows={12}
+                            className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md text-green-400 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-mono resize-vertical"
+                            placeholder="Enter task extras as JSON..."
+                            disabled={isSaving}
+                        />
+                        <div className="mt-2 text-xs text-slate-400">
+                            <p className="mb-1">💡 <strong>JSON Structure:</strong></p>
+                            <ul className="list-disc list-inside space-y-0.5 text-slate-500">
+                                <li><code>priority</code>: "low" | "medium" | "high" | "urgent"</li>
+                                <li><code>dueDate</code>: ISO date string or null</li>
+                                <li><code>tags</code>: Array of strings (e.g., ["work", "urgent"])</li>
+                                <li><code>category</code>: String (e.g., "development", "design")</li>
+                                <li><code>estimatedHours</code>: Number of hours</li>
+                                <li><code>assignee</code>: Person responsible for the task</li>
+                            </ul>
                         </div>
                     </div>
+
+                    <div>
+                        <label htmlFor="status" className="text-sm font-medium text-slate-300 block mb-1">Status</label>
+                        <select id="status" value={status} onChange={e => setStatus(e.target.value as TaskStatus)} className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" disabled={isSaving}>
+                            {Object.values(TaskStatus).map(s => <option key={s} value={s}>{s.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>)}
+                        </select>
+                    </div>
+
                     {error && <p className="text-sm text-red-400 text-center sm:text-left">{error}</p>}
                 </div>
             </div>

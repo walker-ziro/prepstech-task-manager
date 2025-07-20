@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Task } from '../types';
-import { TaskStatus, TaskPriority } from '../types';
+import { TaskStatus } from '../types';
 
 interface TaskCardProps {
   task: Task;
@@ -14,88 +14,28 @@ const statusStyles: { [key in TaskStatus]: { bg: string, text: string, dot: stri
   [TaskStatus.Done]: { bg: 'bg-green-900/50', text: 'text-green-300', dot: 'bg-green-400' },
 };
 
-const priorityStyles: { [key in TaskPriority]: { bg: string, text: string, dot: string } } = {
-  [TaskPriority.Low]: { bg: 'bg-gray-900/50', text: 'text-gray-300', dot: 'bg-gray-400' },
-  [TaskPriority.Medium]: { bg: 'bg-orange-900/50', text: 'text-orange-300', dot: 'bg-orange-400' },
-  [TaskPriority.High]: { bg: 'bg-red-900/50', text: 'text-red-300', dot: 'bg-red-400' },
-};
-
 const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
   const statusStyle = statusStyles[task.status];
-  const priorityStyle = priorityStyles[task.extras?.priority || TaskPriority.Medium];
   
   const formattedStatus = task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const formattedPriority = task.extras?.priority?.charAt(0).toUpperCase() + task.extras?.priority?.slice(1) || 'Medium';
-  
-  const formatDueDate = (dueDate: string | null) => {
-    if (!dueDate) return null;
-    const date = new Date(dueDate);
-    const now = new Date();
-    const isOverdue = date < now;
-    
-    return {
-      formatted: date.toLocaleDateString(),
-      isOverdue
-    };
-  };
-  
-  const dueDateInfo = formatDueDate(task.extras?.dueDate);
 
   return (
     <div className="bg-slate-800 rounded-lg shadow-lg p-4 sm:p-5 flex flex-col h-full hover:shadow-sky-500/10 transition-shadow duration-300 border border-slate-700">
       <div className="flex-grow">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
           <h3 className="text-base sm:text-lg font-bold text-white break-words">{task.title}</h3>
-          <div className="flex flex-row sm:flex-col gap-1 sm:gap-1 flex-wrap sm:flex-nowrap">
-            <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} whitespace-nowrap`}>
-              <svg className={`-ml-0.5 mr-1 sm:mr-1.5 h-2 w-2 ${statusStyle.dot}`} fill="currentColor" viewBox="0 0 8 8">
-                <circle cx="4" cy="4" r="3" />
-              </svg>
-              {formattedStatus}
-            </span>
-            <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityStyle.bg} ${priorityStyle.text} whitespace-nowrap`}>
-              <svg className={`-ml-0.5 mr-1 sm:mr-1.5 h-2 w-2 ${priorityStyle.dot}`} fill="currentColor" viewBox="0 0 8 8">
-                <circle cx="4" cy="4" r="3" />
-              </svg>
-              {formattedPriority}
-            </span>
-          </div>
+          <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} whitespace-nowrap`}>
+            <svg className={`-ml-0.5 mr-1 sm:mr-1.5 h-2 w-2 ${statusStyle.dot}`} fill="currentColor" viewBox="0 0 8 8">
+              <circle cx="4" cy="4" r="3" />
+            </svg>
+            {formattedStatus}
+          </span>
         </div>
         
         <p className="text-slate-400 text-sm mb-3 break-words">{task.description}</p>
         
-        {/* Due Date */}
-        {dueDateInfo && (
-          <div className={`text-xs mb-3 flex items-center gap-1 ${dueDateInfo.isOverdue ? 'text-red-400' : 'text-slate-400'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Due: {dueDateInfo.formatted}
-            {dueDateInfo.isOverdue && <span className="font-semibold">(Overdue)</span>}
-          </div>
-        )}
-        
-        {/* Tags */}
-        {task.extras?.tags && task.extras.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {task.extras.tags.map((tag: string, index: number) => (
-              <span key={index} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-sky-600/20 text-sky-300 border border-sky-600/30">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        
-        {Object.keys(task.extras || {}).length > 0 && (
-          <div className="mb-4">
-            <h4 className="text-xs font-semibold text-slate-500 uppercase mb-2">Extras</h4>
-            <div className="bg-slate-900/50 p-3 rounded-md">
-              <pre className="text-xs text-slate-300 whitespace-pre-wrap break-all">
-                {JSON.stringify(task.extras, null, 2)}
-              </pre>
-            </div>
-          </div>
-        )}
+
+
       </div>
 
       <div className="flex justify-end items-center space-x-1 sm:space-x-2 pt-4 border-t border-slate-700/50">
