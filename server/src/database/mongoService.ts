@@ -26,18 +26,18 @@ export class MongoDBService {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
-      });
+      } as any);
 
       console.log('✅ Connected to MongoDB');
       this.isConnected = true;
 
       // Handle connection events
-      mongoose.connection.on('error', (error) => {
+      (mongoose.connection as any).on('error', (error: any) => {
         console.error('❌ MongoDB connection error:', error);
         this.isConnected = false;
       });
 
-      mongoose.connection.on('disconnected', () => {
+      (mongoose.connection as any).on('disconnected', () => {
         console.warn('⚠️ MongoDB disconnected');
         this.isConnected = false;
       });

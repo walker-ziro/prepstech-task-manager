@@ -16,7 +16,10 @@
     "sourceMap": true,
     "noEmitOnError": false,
     "allowImportingTsExtensions": false,
-    "moduleDetection": "force"
+    "moduleDetection": "force",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["ES2022"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

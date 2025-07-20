@@ -90,4 +90,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
   };
+  body: any;
+  params: any;
+  headers: any;
 }
