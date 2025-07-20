@@ -99,7 +99,7 @@ router.post('/signup', async (req, res, next) => {
 // Login route
 router.post('/login', async (req, res, next) => {
   try {
-    const { error, value } = authSchema.validate(req.body);
+    const { error, value } = loginSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ error: { message: error.details[0].message } });
     }
