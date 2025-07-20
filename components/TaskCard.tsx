@@ -8,16 +8,45 @@ interface TaskCardProps {
   onDelete: () => void;
 }
 
+// Styles for the task status badge
 const statusStyles: { [key in TaskStatus]: { bg: string, text: string, dot: string } } = {
   [TaskStatus.Pending]: { bg: 'bg-yellow-900/50', text: 'text-yellow-300', dot: 'bg-yellow-400' },
   [TaskStatus.InProgress]: { bg: 'bg-blue-900/50', text: 'text-blue-300', dot: 'bg-blue-400' },
   [TaskStatus.Done]: { bg: 'bg-green-900/50', text: 'text-green-300', dot: 'bg-green-400' },
 };
 
+// Styles for the task priority
+const priorityStyles: { [key: string]: { text: string } } = {
+  high: { text: 'text-red-400' },
+  medium: { text: 'text-yellow-400' },
+  low: { text: 'text-green-400' },
+};
+
+// Helper function to format the date string for display
+const formatDate = (dateString?: string): string => {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() + userTimezoneOffset).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    } catch (error) {
+        return 'Invalid Date';
+    }
+};
+
 const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
   const statusStyle = statusStyles[task.status];
-  
   const formattedStatus = task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+  // Extract extras safely
+  const priority = task.extras?.priority?.toLowerCase();
+  const dueDate = task.extras?.dueDate;
+  const tags = task.extras?.tags;
+  const priorityStyle = priority ? priorityStyles[priority] : undefined;
 
   return (
     <div className="bg-slate-800 rounded-lg shadow-lg p-4 sm:p-5 flex flex-col h-full hover:shadow-sky-500/10 transition-shadow duration-300 border border-slate-700">
@@ -32,10 +61,38 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
           </span>
         </div>
         
-        <p className="text-slate-400 text-sm mb-3 break-words">{task.description}</p>
+        <p className="text-slate-400 text-sm mb-4 break-words">{task.description}</p>
         
+        {/* --- NEW: Priority and Due Date --- */}
+        <div className="flex items-center space-x-4 text-xs text-slate-400 mb-4">
+          {priority && priorityStyle && (
+            <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-1.5 ${priorityStyle.text}`} viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 01-1-1V6z" clipRule="evenodd" />
+                </svg>
+                <span className={`${priorityStyle.text} font-medium capitalize`}>{priority} Priority</span>
+            </div>
+          )}
+          {dueDate && (
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+              <span>Due {formatDate(dueDate)}</span>
+            </div>
+          )}
+        </div>
 
-
+        {/* --- NEW: Tags --- */}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {tags.map(tag => (
+              <span key={tag} className="inline-block bg-slate-700 text-slate-300 text-xs font-medium px-2 py-1 rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end items-center space-x-1 sm:space-x-2 pt-4 border-t border-slate-700/50">
