@@ -60,7 +60,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-
+// --- ADD THIS ROOT ROUTE ---
 app.get('/', (req, res) => {
   res.status(200).json({ 
     message: 'Prepsteph Task Manager API is active and running.',
@@ -68,7 +68,7 @@ app.get('/', (req, res) => {
     documentation: 'No public documentation available at this time.' 
   });
 });
-
+// -------------------------
 
 // Routes
 app.use('/api/auth', authRoutes);
