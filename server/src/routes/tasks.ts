@@ -32,7 +32,7 @@ const updateTaskSchema = Joi.object({
     dueDate: Joi.string().allow('', null),
     tags: Joi.array().items(Joi.string())
   }).unknown(true)
-});
+}).min(1); // Ensure at least one field is provided for an update
 
 // Get all tasks for authenticated user
 router.get('/', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
@@ -56,9 +56,9 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next)
     const { title, description, status, extras }: CreateTaskRequest = value;
     const mongoService = getMongoService();
     const task = await mongoService.createTask(
-      title, 
-      description || '', 
-      status as TaskStatus, 
+      title,
+      description || '',
+      status as TaskStatus,
       extras || {
         priority: TaskPriority.Medium,
         dueDate: undefined,
@@ -84,32 +84,26 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res, nex
     const updates: UpdateTaskRequest = value;
 
     const mongoService = getMongoService();
-    
-    // Check if task exists and belongs to user
     const existingTask = await mongoService.getTaskById(taskId, req.user!.id);
     if (!existingTask) {
       return res.status(404).json({ error: { message: 'Task not found' } });
     }
 
-    // Transform UpdateTaskRequest to match Task type
     const taskUpdates: Partial<Task> = {
       ...(updates.title && { title: updates.title }),
       ...(updates.description !== undefined && { description: updates.description }),
       ...(updates.status && { status: updates.status as TaskStatus }),
-      ...(updates.extras && { 
+      ...(updates.extras && {
         extras: {
-          priority: updates.extras.priority || existingTask.extras.priority,
-          due_date: updates.extras.dueDate !== undefined ? updates.extras.dueDate : existingTask.extras.due_date,
-          tags: updates.extras.tags || existingTask.extras.tags,
+          ...existingTask.extras,
           ...updates.extras
         }
       })
     };
 
-    // Update the task
     const updatedTask = await mongoService.updateTask(taskId, req.user!.id, taskUpdates);
     if (!updatedTask) {
-      return res.status(400).json({ error: { message: 'No valid fields to update' } });
+      return res.status(400).json({ error: { message: 'Update failed or no valid fields to update' } });
     }
 
     res.json(updatedTask);
@@ -124,7 +118,7 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res, 
     const taskId = req.params.id;
     const mongoService = getMongoService();
     const deleted = await mongoService.deleteTask(taskId, req.user!.id);
-    
+
     if (!deleted) {
       return res.status(404).json({ error: { message: 'Task not found' } });
     }
@@ -139,7 +133,7 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res, 
 router.post('/insights', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { tasks } = req.body;
-    
+
     if (!tasks || !Array.isArray(tasks)) {
       return res.status(400).json({ error: { message: 'Tasks array is required' } });
     }
@@ -152,96 +146,32 @@ router.post('/insights', authenticateToken, async (req: AuthenticatedRequest, re
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    // Calculate task statistics
-    const totalTasks = tasks.length;
-    const completedTasks = tasks.filter((task: Task) => task.status === TaskStatus.Done).length;
-    const inProgressTasks = tasks.filter((task: Task) => task.status === TaskStatus.InProgress).length;
-    const pendingTasks = tasks.filter((task: Task) => task.status === TaskStatus.Pending).length;
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-    // Prepare task data for AI analysis
+    // Prepare a brief summary for the AI
     const taskSummary = tasks.map((task: Task) => ({
       title: task.title,
       status: task.status,
-      description: task.description,
-      extras: task.extras
+      priority: task.extras?.priority,
     }));
 
-    // Group tasks by status for better analysis
-    const tasksByStatus = {
-      pending: tasks.filter((task: Task) => task.status === TaskStatus.Pending),
-      inProgress: tasks.filter((task: Task) => task.status === TaskStatus.InProgress),
-      completed: tasks.filter((task: Task) => task.status === TaskStatus.Done)
+    // Simplified prompt for concise and faster responses
+    const prompt = tasks.length > 0
+      ? `Based on this task list: ${JSON.stringify(taskSummary)}. Provide very brief (2-3 short paragraphs) and actionable productivity recommendations. Use markdown for simple formatting. Focus only on the most critical advice.`
+      : `The user has no tasks. Provide a very brief (1-2 short paragraphs), encouraging message to help them start. Suggest 1-2 simple first steps. Use markdown for simple formatting.`;
+
+    const generationConfig = {
+      maxOutputTokens: 150,
+      temperature: 0.7,
     };
 
-    const prompt = `
-      Analyze these tasks and provide structured productivity insights and recommendations:
-      
-      Task Data: ${JSON.stringify(taskSummary, null, 2)}
-      
-      Current Statistics:
-      - Total Tasks: ${totalTasks}
-      - Completed: ${completedTasks}
-      - In Progress: ${inProgressTasks}
-      - Pending: ${pendingTasks}
-      - Completion Rate: ${completionRate}%
-      
-      Please provide practical productivity insights in a conversational, helpful tone. Format your response as markdown with clear sections and proper spacing between sentences and paragraphs:
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig,
+    });
 
-      ## 📊 Overall Assessment
-
-      [Brief overview of productivity patterns and current status. Use separate sentences with proper spacing.]
-
-      ## ✅ What's Working Well
-
-      - [Positive observation 1]
-      - [Positive observation 2]
-      - [Positive observation 3]
-
-      ## 🎯 Areas for Improvement
-
-      - [Specific area 1 to focus on]
-      - [Specific area 2 to focus on]
-      - [Specific area 3 to focus on]
-
-      ## 📋 Task-Specific Recommendations
-
-      ### High Priority Actions
-      [Specific actions for urgent tasks. Each sentence should be clear and separated.]
-
-      ### In Progress Tasks
-      [Advice for current in-progress tasks with specific task titles. Provide actionable steps.]
-
-      ### Planning & Organization
-      [Recommendations for pending tasks with specific task titles. Include planning strategies.]
-
-      ## 💡 Productivity Tips
-
-      **Tip 1:** [Practical tip with clear explanation]
-
-      **Tip 2:** [Another practical tip with detailed guidance]
-
-      **Tip 3:** [Final tip to boost overall productivity]
-
-      Keep the tone encouraging and provide specific, actionable advice. Reference actual task titles when making recommendations. Ensure proper spacing between sentences and use clear paragraph breaks.
-    `;
-
-    const result = await model.generateContent(prompt);
     const aiRecommendations = result.response.text();
+    
+    res.json({ insight: { recommendations: aiRecommendations } });
 
-    // Combine statistics with AI recommendations
-    const insight = {
-      statistics: {
-        totalTasks,
-        completedTasks,
-        inProgressTasks,
-        pendingTasks,
-        completionRate
-      },
-      recommendations: aiRecommendations
-    };
-
-    res.json({ insight });
   } catch (error) {
     console.error('Error generating insights:', error);
     next(error);
