@@ -314,7 +314,7 @@ Once you add some tasks, I'll be able to provide personalized insights about you
                     </div>
                   </div>
                 ) : aiRecommendations ? (
-                  <div className="prose prose-invert prose-sm sm:prose-base max-w-none prose-p:text-slate-300 prose-p:mb-4 prose-p:leading-relaxed prose-headings:text-white prose-strong:text-white prose-ul:text-slate-300 prose-ul:mb-4 prose-li:marker:text-sky-400 prose-li:mb-2 prose-h2:text-xl prose-h2:text-sky-300 prose-h2:border-b prose-h2:border-slate-600 prose-h2:pb-2 prose-h2:mb-4 prose-h2:mt-6 prose-h3:text-lg prose-h3:text-indigo-300 prose-h3:mt-6 prose-h3:mb-3">
+                  <div className="prose prose-invert prose-sm sm:prose-base max-w-none prose-p:text-slate-300 prose-p:mb-4 prose-p:leading-relaxed prose-headings:text-white prose-strong:text-white prose-ul:text-slate-300 prose-ul:mb-4 prose-li:marker:text-sky-400 prose-li:mb-2 prose-h2:text-xl prose-h2:text-sky-300 prose-h2:border-b prose-h2:border-slate-600 prose-h2:pb-2 prose-h2:mb-4 prose-h2:mt-6 prose-h3:text-lg prose-h3:text-indigo-300 prose-h3:mt-6 prose-h3:mb-3 whitespace-pre-wrap">
                     <ReactMarkdown>{aiRecommendations}</ReactMarkdown>
                   </div>
                 ) : error ? (
