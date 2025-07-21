@@ -65,36 +65,17 @@ const InsightsModal: React.FC<InsightsModalProps> = ({ isOpen, onClose, tasks })
       setInsights(immediateInsights);
       setError('');
       
-      if (tasks.length === 0) {
-        setAiRecommendations(`## 🚀 Get Started with Your Task Management
+      // The `if (tasks.length === 0)` block has been removed to allow the AI to generate all messages.
 
-You don't have any tasks yet! Here are some tips to get you started:
-
-### 📝 Creating Your First Tasks
-- Start with 2-3 simple, achievable tasks
-- Make each task specific and actionable
-- Use clear, descriptive titles
-
-### 💡 Productivity Tips
-- **Start Small**: Begin with tasks that take 15-30 minutes
-- **Set Clear Goals**: Each task should have a specific outcome
-- **Prioritize**: Focus on the most important task first
-
-Once you add some tasks, I'll be able to provide personalized insights about your productivity patterns and specific recommendations for your workflow!`);
-        return;
-      }
-
-      // Load AI recommendations separately in the background
+      // Load AI recommendations in the background for all cases.
       const fetchAIRecommendations = async () => {
         setIsLoadingAI(true);
         try {
           const result = await generateInsights(tasks);
           
-          // Handle both old format (string) and new format (object)
           if (typeof result === 'string') {
             setAiRecommendations(result);
           } else {
-            // Handle the new format with insight wrapper
             const insightData = (result as any).insight || result;
             setAiRecommendations(insightData.recommendations || 'No recommendations available.');
           }
@@ -140,7 +121,7 @@ Once you add some tasks, I'll be able to provide personalized insights about you
                 </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Total Tasks */}
+                  {/* Cards for stats... */}
                   <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                     <div className="flex items-center justify-between">
                       <div>
@@ -155,7 +136,6 @@ Once you add some tasks, I'll be able to provide personalized insights about you
                     </div>
                   </div>
                   
-                  {/* Completed Tasks */}
                   <div className="bg-green-900/20 rounded-lg p-4 border border-green-700/50">
                     <div className="flex items-center justify-between">
                       <div>
@@ -170,7 +150,6 @@ Once you add some tasks, I'll be able to provide personalized insights about you
                     </div>
                   </div>
                   
-                  {/* In Progress Tasks */}
                   <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700/50">
                     <div className="flex items-center justify-between">
                       <div>
@@ -184,142 +163,35 @@ Once you add some tasks, I'll be able to provide personalized insights about you
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Pending Tasks */}
-                  <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700/50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-2xl font-bold text-blue-400">{insights.statistics.pendingTasks}</div>
-                        <div className="text-sm text-blue-300/70">Pending</div>
-                      </div>
-                      <div className="p-2 bg-blue-700/30 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Completion Rate */}
-                  <div className="bg-sky-900/20 rounded-lg p-4 border border-sky-700/50 sm:col-span-2 lg:col-span-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-2xl font-bold text-sky-400">{insights.statistics.completionRate}%</div>
-                        <div className="text-sm text-sky-300/70">Completion Rate</div>
-                      </div>
-                      <div className="p-2 bg-sky-700/30 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Overdue Tasks */}
-                  {insights.statistics.overdueTasks > 0 && (
-                    <div className="bg-red-900/20 rounded-lg p-4 border border-red-700/50">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-2xl font-bold text-red-400">{insights.statistics.overdueTasks}</div>
-                          <div className="text-sm text-red-300/70">Overdue</div>
-                        </div>
-                        <div className="p-2 bg-red-700/30 rounded-lg">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
-                
-                {/* Priority Breakdown */}
-                <div className="space-y-4">
+
+                {/* AI Recommendations */}
+                <div className="bg-slate-700/30 rounded-lg p-4">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5l3-1m-3 1l3 1" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
-                    Priority Breakdown
+                    AI Recommendations
+                    {isLoadingAI && (
+                      <div className="ml-2 w-4 h-4 border-2 border-dashed rounded-full animate-spin border-indigo-400"></div>
+                    )}
                   </h3>
                   
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                        <span className="text-white font-medium">High</span>
+                  {isLoadingAI ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-indigo-400 mx-auto mb-3"></div>
+                        <p className="text-slate-400 text-sm">Generating AI insights...</p>
                       </div>
-                      <span className="text-slate-300">{insights.statistics.highPriorityTasks} tasks</span>
                     </div>
-                    
-                    <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-orange-400"></div>
-                        <span className="text-white font-medium">Medium</span>
-                      </div>
-                      <span className="text-slate-300">{insights.statistics.mediumPriorityTasks} tasks</span>
+                  ) : aiRecommendations ? (
+                    <div className="prose prose-invert prose-sm sm:prose-base max-w-none prose-p:text-slate-300 whitespace-pre-wrap">
+                      <ReactMarkdown>{aiRecommendations}</ReactMarkdown>
                     </div>
-                    
-                    <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                        <span className="text-white font-medium">Low</span>
-                      </div>
-                      <span className="text-slate-300">{insights.statistics.lowPriorityTasks} tasks</span>
-                    </div>
-                  </div>
+                  ) : error ? (
+                    <p className="text-center text-red-400 bg-red-900/50 p-3 rounded-md">{error}</p>
+                  ) : null}
                 </div>
-
-                {/* Upcoming Deadlines */}
-                {insights.statistics.upcomingDeadlines && insights.statistics.upcomingDeadlines.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      Upcoming Deadlines
-                    </h3>
-                    
-                    <div className="space-y-2">
-                      {insights.statistics.upcomingDeadlines.map((task: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${task.priority === 'high' ? 'bg-red-400' : task.priority === 'medium' ? 'bg-orange-400' : 'bg-gray-400'}`}></div>
-                            <span className="text-white font-medium">{task.title}</span>
-                          </div>
-                          <span className="text-slate-300 text-sm">{new Date(task.dueDate).toLocaleDateString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* AI Recommendations - Shows with loading state */}
-              <div className="bg-slate-700/30 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  AI Recommendations
-                  {isLoadingAI && (
-                    <div className="ml-2 w-4 h-4 border-2 border-dashed rounded-full animate-spin border-indigo-400"></div>
-                  )}
-                </h3>
-                
-                {isLoadingAI ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="text-center">
-                      <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-indigo-400 mx-auto mb-3"></div>
-                      <p className="text-slate-400 text-sm">Generating AI insights...</p>
-                    </div>
-                  </div>
-                ) : aiRecommendations ? (
-                  <div className="prose prose-invert prose-sm sm:prose-base max-w-none prose-p:text-slate-300 prose-p:mb-4 prose-p:leading-relaxed prose-headings:text-white prose-strong:text-white prose-ul:text-slate-300 prose-ul:mb-4 prose-li:marker:text-sky-400 prose-li:mb-2 prose-h2:text-xl prose-h2:text-sky-300 prose-h2:border-b prose-h2:border-slate-600 prose-h2:pb-2 prose-h2:mb-4 prose-h2:mt-6 prose-h3:text-lg prose-h3:text-indigo-300 prose-h3:mt-6 prose-h3:mb-3 whitespace-pre-wrap">
-                    <ReactMarkdown>{aiRecommendations}</ReactMarkdown>
-                  </div>
-                ) : error ? (
-                  <p className="text-center text-red-400 bg-red-900/50 p-3 rounded-md">{error}</p>
-                ) : null}
               </div>
             </div>
           )}
